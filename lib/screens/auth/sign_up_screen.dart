@@ -9,6 +9,9 @@ import 'package:insta_clone/screens/auth/services/auth.dart';
 import 'package:insta_clone/utils/utils.dart';
 import 'package:insta_clone/widgets/loader.dart';
 
+import '../../responsive/mobile_screen_layout.dart';
+import '../../responsive/responsive_layout_screen.dart';
+import '../../responsive/web_screen_layout.dart';
 import '../../utils/asset_manager.dart';
 import '../../utils/colors.dart';
 import '../../widgets/text_field_input.dart';
@@ -51,13 +54,19 @@ class _SignUpScreenState extends State<SignUpScreen> {
         password: passwordController.text,
         bio: bioController.text,
         userName: usernameController.text.trim(),
-        file: _image,
+        file: _image!,
         context: context);
     setState(() {
       _isLoading = false;
     });
     if (res != 'Success') {
       showSnackBar(context, res);
+    } else {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const ResponsiveLayout(
+                mobileScreenLayout: MobileScreenLayout(),
+                webScreenLayout: WebScreenLayout(),
+              )));
     }
   }
 
@@ -101,7 +110,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             ),
                             borderRadius: const BorderRadius.all(Radius.circular(64))),
                         child: _image != null
-                            ? CircleAvatar(radius: 64, backgroundImage: MemoryImage(_image!))
+                            ? CircleAvatar(
+                                radius: 64,
+                                backgroundImage: MemoryImage(_image!),
+                              )
                             : const CircleAvatar(
                                 radius: 64,
                                 backgroundImage: NetworkImage(

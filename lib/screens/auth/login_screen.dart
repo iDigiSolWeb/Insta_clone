@@ -9,6 +9,10 @@ import 'package:insta_clone/utils/utils.dart';
 import 'package:insta_clone/widgets/loader.dart';
 import 'package:insta_clone/widgets/text_field_input.dart';
 
+import '../../responsive/mobile_screen_layout.dart';
+import '../../responsive/responsive_layout_screen.dart';
+import '../../responsive/web_screen_layout.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
 
@@ -34,13 +38,20 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     String res = await AuthMethods().loginUser(
         email: emailController.text.trim(), password: passwordController.text, context: context);
+
+    if (res == 'Successful Login') {
+      Navigator.of(context).pushReplacement(MaterialPageRoute(
+          builder: (context) => const ResponsiveLayout(
+                mobileScreenLayout: MobileScreenLayout(),
+                webScreenLayout: WebScreenLayout(),
+              )));
+      showSnackBar(context, 'Successfully Logged in');
+    } else {
+      showSnackBar(context, res);
+    }
     setState(() {
       _isLoading = false;
     });
-
-    if (res == 'Successful Login') {
-      showSnackBar(context, 'Successfully Logged in');
-    }
   }
 
   void navigateToSignUp() {

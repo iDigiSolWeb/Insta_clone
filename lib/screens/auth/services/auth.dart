@@ -11,6 +11,14 @@ class AuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
+  Future<UserModel> getUserDetails() async {
+    User currentUser = _auth.currentUser!;
+
+    DocumentSnapshot snapshot = await _firestore.collection('users').doc(currentUser.uid).get();
+
+    return UserModel.fromSnap(snapshot);
+  }
+
   ///sign up
   Future<String> signUpUser({
     required String email,
@@ -21,7 +29,6 @@ class AuthMethods {
     required BuildContext context,
   }) async {
     String res = 'Error Occurred';
-    UserModel? userModel;
 
     try {
       if (email.isNotEmpty ||
@@ -33,20 +40,20 @@ class AuthMethods {
         UserCredential usercred =
             await _auth.createUserWithEmailAndPassword(email: email, password: password);
 
-        if (file != null) {
-          downloadUrl = await StorageMethods()
-              .uploadImagetoStorage('profilePic/${usercred.user!.uid}', file, false);
-        }
+        downloadUrl = await StorageMethods()
+            .uploadImagetoStorage('profilePic/${usercred.user!.uid}', file!, false);
 
-        _firestore.collection('users').doc(usercred.user!.uid).set({
-          'uid': usercred.user!.uid,
-          'username': userName,
-          'email': email,
-          'bio': bio,
-          'photoUrl': downloadUrl,
-          'followers': [],
-          'following': [],
-        });
+        UserModel userModel = UserModel(
+          username: userName,
+          uid: usercred.user!.uid,
+          photoUrl: downloadUrl,
+          email: email,
+          bio: bio,
+          followers: [],
+          following: [],
+        );
+
+        _firestore.collection('users').doc(usercred.user!.uid).set(userModel.toJson());
 
         res = 'Success';
         showSnackBar(context, 'You have succesfully created an account , please login');
@@ -65,6 +72,7 @@ class AuthMethods {
     return res;
   }
 
+  ///Login
   Future<String> loginUser(
       {required String email, required String password, required BuildContext context}) async {
     String res = 'Error Occurred';
