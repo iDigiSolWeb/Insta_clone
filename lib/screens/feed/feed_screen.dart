@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:insta_clone/utils/asset_manager.dart';
 import 'package:insta_clone/utils/colors.dart';
+import 'package:insta_clone/utils/global_variables.dart';
 import 'package:insta_clone/widgets/post_card.dart';
 
 import '../../widgets/loader.dart';
@@ -12,24 +13,28 @@ class FeedScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.of(context).size.width;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: mobileBackgroundColor,
-        centerTitle: false,
-        title: SvgPicture.asset(
-          logo,
-          color: primaryColor,
-          height: 32,
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(
-              Icons.messenger_outline,
+      backgroundColor: width > webScreenSize ? webBackgroundColor : mobileBackgroundColor,
+      appBar: width > webScreenSize
+          ? null
+          : AppBar(
+              backgroundColor: mobileBackgroundColor,
+              centerTitle: false,
+              title: SvgPicture.asset(
+                logo,
+                color: primaryColor,
+                height: 32,
+              ),
+              actions: [
+                IconButton(
+                  onPressed: () {},
+                  icon: const Icon(
+                    Icons.messenger_outline,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
       body: StreamBuilder(
         stream: FirebaseFirestore.instance.collection('posts').snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot<Map<String, dynamic>>> snap) {
@@ -39,7 +44,11 @@ class FeedScreen extends StatelessWidget {
           return ListView.builder(
               itemCount: snap.data!.docs.length,
               itemBuilder: (context, index) {
-                return PostCard(snap: snap.data!.docs[index]);
+                return Container(
+                    margin: EdgeInsets.symmetric(
+                        horizontal: width > webScreenSize ? width * 0.3 : 0,
+                        vertical: width > webScreenSize ? 15 : 0),
+                    child: PostCard(snap: snap.data!.docs[index]));
               });
         },
       ),

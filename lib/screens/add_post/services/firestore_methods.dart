@@ -10,6 +10,7 @@ import 'package:uuid/uuid.dart';
 
 class FireStoreMethods {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   Future<String> uploadPost(
     BuildContext context,
@@ -93,5 +94,34 @@ class FireStoreMethods {
     } catch (e) {
       showSnackBar(context, e.toString());
     }
+  }
+
+  Future<void> followUser(String uid, String followId, BuildContext context) async {
+    try {
+      DocumentSnapshot snap = await _firestore.collection('users').doc(uid).get();
+      List follwing = (snap.data()! as dynamic)['following'];
+
+      if (follwing.contains(followId)) {
+        await _firestore.collection('users').doc(followId).update({
+          'followers': FieldValue.arrayRemove([uid])
+        });
+        await _firestore.collection('users').doc(uid).update({
+          'following': FieldValue.arrayRemove([followId])
+        });
+      } else {
+        await _firestore.collection('users').doc(followId).update({
+          'followers': FieldValue.arrayUnion([uid])
+        });
+        await _firestore.collection('users').doc(uid).update({
+          'following': FieldValue.arrayUnion([followId])
+        });
+      }
+    } catch (e) {
+      showSnackBar(context, e.toString());
+    }
+  }
+
+  Future<void> signOut() async {
+    await _auth.signOut();
   }
 }
